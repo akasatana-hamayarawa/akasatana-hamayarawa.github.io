@@ -2,207 +2,256 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Tetris Template Data Exporter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>誰かのホームページ & Updates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --accent: #00f0f0; --bg: #0f0f13; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { display: flex; gap: 30px; background: #1a1a20; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap');
         
-        /* 盤面エリア */
-        #editor-canvas { border: 2px solid #444; background: #000; cursor: crosshair; }
-        
-        /* 設定パネル */
-        .panel { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-        .section { background: #252530; padding: 15px; border-radius: 8px; }
-        h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; }
-        
-        /* 色選択（ミノ選択） */
-        .color-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .color-btn { border: 2px solid transparent; padding: 5px; cursor: pointer; text-align: center; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .color-btn.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        
-        /* NEXT/HOLD入力 */
-        .queue-display { font-family: monospace; background: #000; padding: 10px; min-height: 40px; word-break: break-all; border-radius: 4px; margin-bottom: 5px; border: 1px solid #444; }
-        .input-group { display: flex; gap: 5px; flex-wrap: wrap; }
-        .mino-btn { background: #333; color: #fff; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        .mino-btn:hover { background: #444; }
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
 
-        /* 出力エリア */
-        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #444; border-radius: 4px; resize: none; margin-top: 10px; }
-        .btn-main { background: var(--accent); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s; }
-        .btn-main:hover { opacity: 0.8; transform: scale(1.02); }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #60a5fa, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -9px;
+            top: 5px;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            border: 4px solid #0f172a;
+        }
+
+        .timeline-border {
+            border-left: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Dropdown simple styling */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        
+        .nav-link {
+            transition: all 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #60a5fa;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-    <h2 style="color:var(--accent);">TETRIS TEMPLATE EXPORTER</h2>
-    <p style="font-size: 13px; color: #aaa;">盤面をデザインして、プログラム用のデータを作成します</p>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card rounded-none border-t-0 border-x-0">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold gradient-text">誰かのホームページ</div>
+            
+            <div class="flex items-center space-x-2 md:space-x-6">
+                <a href="#about" class="nav-link text-sm md:text-base hidden sm:block">自己紹介</a>
+                
+                <!-- ゲーム Dropdown -->
+                <div class="relative dropdown group">
+                    <button class="nav-link text-sm md:text-base flex items-center font-bold text-blue-400">
+                        ゲーム
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="dropdown-menu absolute right-0 mt-1 w-48 hidden pt-2">
+                        <div class="glass-card bg-slate-800 shadow-2xl py-2 border border-blue-500/30 overflow-hidden">
+                            <a href="https://akasatana-hamayarawa.github.io/tetris/" target="_blank" rel="noopener noreferrer" class="block px-4 py-3 hover:bg-blue-600 transition flex items-center text-white">
+                                <span class="mr-3 text-lg">🕹️</span> 
+                                <div>
+                                    <div class="font-bold">テトリス</div>
+                                    <div class="text-[10px] text-blue-200">外部サイトを開きます</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="container">
-        <div>
-            <canvas id="editor-canvas" width="240" height="480"></canvas>
-            <div style="margin-top: 10px; font-size: 12px; color: #888;">
-                左クリック: 配置 / 右クリック: 消去
+                <a href="#updates" class="nav-link text-sm md:text-base">進捗</a>
             </div>
         </div>
+    </nav>
 
-        <div class="panel">
-            <div class="section">
-                <h3>1. 設置するミノ（色）を選択</h3>
-                <div class="color-picker" id="color-picker">
-                    <div class="color-btn active" data-val="8" style="background:#444;">GRAY</div>
-                    <div class="color-btn" data-val="1" style="background:#00f0f0; color:#000;">I</div>
-                    <div class="color-btn" data-val="2" style="background:#0000f0;">J</div>
-                    <div class="color-btn" data-val="3" style="background:#f0a000;">L</div>
-                    <div class="color-btn" data-val="4" style="background:#f0f000; color:#000;">O</div>
-                    <div class="color-btn" data-val="5" style="background:#00f000; color:#000;">S</div>
-                    <div class="color-btn" data-val="6" style="background:#a000f0;">T</div>
-                    <div class="color-btn" data-val="7" style="background:#f00000;">Z</div>
+    <!-- Hero Section -->
+    <section class="pt-40 pb-20 px-6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                <span class="text-white">暁人の</span><br class="md:hidden">
+                <span class="gradient-text">デジタルポートフォリオ</span>
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                日々の更新、制作したゲーム、そして自分自身についての記録。
+            </p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold mb-10 flex items-center">
+                <span class="w-10 h-1 bg-blue-500 mr-4 rounded-full"></span>
+                自己紹介
+            </h2>
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+                <div class="glass-card p-8 border-l-4 border-l-blue-500">
+                    <h3 class="text-2xl font-bold mb-4 text-white">暁人 (Akito)</h3>
+                    <p class="text-gray-300 leading-relaxed mb-6">
+                        こんにちは！暁人です。このページでは自分の活動や、追加した機能のログを公開しています。
+                        新しいものを作ることや、ゲームが大好きです。
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="bg-blue-900/40 text-blue-300 border border-blue-500/30 px-4 py-1.5 rounded-full text-xs font-semibold">Web制作</span>
+                        <span class="bg-purple-900/40 text-purple-300 border border-purple-500/30 px-4 py-1.5 rounded-full text-xs font-semibold">ゲーム好き</span>
+                        <span class="bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-semibold">進化中</span>
+                    </div>
+                </div>
+                <div class="relative group h-64">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-700"></div>
+                    <div class="relative h-full glass-card overflow-hidden rounded-2xl flex items-center justify-center border-slate-700">
+                        <span class="text-slate-500 italic">[イメージ画像]</span>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="section">
-                <h3>2. HOLD ミノ設定</h3>
-                <div class="input-group" id="hold-picker">
-                    <button class="mino-btn" onclick="setHold('I')">I</button>
-                    <button class="mino-btn" onclick="setHold('J')">J</button>
-                    <button class="mino-btn" onclick="setHold('L')">L</button>
-                    <button class="mino-btn" onclick="setHold('O')">O</button>
-                    <button class="mino-btn" onclick="setHold('S')">S</button>
-                    <button class="mino-btn" onclick="setHold('T')">T</button>
-                    <button class="mino-btn" onclick="setHold('Z')">Z</button>
-                    <button class="mino-btn" onclick="setHold(null)" style="color:#f44;">Clear</button>
+    <!-- Updates Section -->
+    <section id="updates" class="py-20 px-6 bg-slate-900/30">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-12 gap-6">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">進捗ログ</h2>
+                    <p class="text-gray-400">これまでの更新履歴です</p>
                 </div>
-                <div class="queue-display" id="hold-val" style="color:var(--accent); font-size:20px; text-align:center;">None</div>
+                <button onclick="addUpdate()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-900/20 transition-all font-bold flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    履歴を追加
+                </button>
             </div>
 
-            <div class="section">
-                <h3>3. NEXT キュー設定</h3>
-                <div class="input-group">
-                    <button class="mino-btn" onclick="addNext('I')">I</button>
-                    <button class="mino-btn" onclick="addNext('J')">J</button>
-                    <button class="mino-btn" onclick="addNext('L')">L</button>
-                    <button class="mino-btn" onclick="addNext('O')">O</button>
-                    <button class="mino-btn" onclick="addNext('S')">S</button>
-                    <button class="mino-btn" onclick="addNext('T')">T</button>
-                    <button class="mino-btn" onclick="addNext('Z')">Z</button>
-                    <button class="mino-btn" onclick="clearNext()" style="color:#f44;">Reset</button>
-                </div>
-                <div class="queue-display" id="next-val"></div>
+            <div id="timeline-container" class="ml-4 timeline-border relative space-y-8 pb-10">
+                <!-- タイムラインがここに表示されます -->
             </div>
+        </div>
+    </section>
 
-            <button class="btn-main" onclick="exportData()">EXPORT DATA</button>
-            <textarea id="output-json" readonly placeholder="ここにデータが出力されます"></textarea>
-            <button class="mino-btn" style="margin-top:5px; font-size:11px;" onclick="copyToClipboard()">Copy to Clipboard</button>
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-slate-800 text-center">
+        <div class="max-w-5xl mx-auto">
+            <p class="text-gray-500 text-sm">© 2024 誰かのホームページ - Powered by Akito</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div id="update-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-[100] flex items-center justify-center p-6">
+        <div class="glass-card p-8 w-full max-w-md border-blue-500/50">
+            <h3 class="text-xl font-bold mb-6 flex items-center">
+                <span class="text-blue-400 mr-2">✨</span> 新しい進捗を記録
+            </h3>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">日付</label>
+                    <input type="date" id="input-date" class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-white transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">更新内容</label>
+                    <textarea id="input-text" rows="3" placeholder="例: テトリスのリンクをメニューに追加しました" class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-white transition resize-none"></textarea>
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-3 border border-slate-700 rounded-lg hover:bg-slate-800 transition font-bold">戻る</button>
+                    <button onclick="saveUpdate()" class="flex-1 px-4 py-3 bg-blue-600 rounded-lg hover:bg-blue-500 transition font-bold shadow-lg shadow-blue-900/20">保存する</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('editor-canvas');
-        const ctx = canvas.getContext('2d');
-        const COLS = 10;
-        const ROWS = 20; // 画面上に見える範囲
-        const BLOCK_SIZE = 24;
-        
-        // 内部データ (22行として管理)
-        let arena = Array.from({length: 22}, () => new Array(COLS).fill(0));
-        let selectedColor = 8;
-        let holdMino = null;
-        let nextQueue = [];
+        // 初期の履歴データ
+        let updates = [
+            { date: '2024-03-24', content: 'サイトのデザインを決定しました' },
+            { date: '2024-03-25', content: '自己紹介を追加しました' },
+            { date: '2024-03-26', content: 'メニューに「ゲーム」を追加し、テトリスと連携しました' }
+        ];
 
-        const COLORS = [null, '#00f0f0', '#0000f0', '#f0a000', '#f0f000', '#00f000', '#a000f0', '#f00000', '#666'];
-
-        // 初期描画
-        function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function renderUpdates() {
+            const container = document.getElementById('timeline-container');
+            const sorted = [...updates].sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            // グリッド線
-            ctx.strokeStyle = '#222';
-            for(let i=0; i<=COLS; i++) { ctx.beginPath(); ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); ctx.stroke(); }
-            for(let i=0; i<=ROWS; i++) { ctx.beginPath(); ctx.moveTo(0, i*BLOCK_SIZE); ctx.lineTo(canvas.width, i*BLOCK_SIZE); ctx.stroke(); }
-
-            // ブロック描画
-            arena.forEach((row, y) => {
-                if (y < 2) return; // 上位2行は隠し
-                row.forEach((v, x) => {
-                    if (v !== 0) {
-                        ctx.fillStyle = COLORS[v];
-                        ctx.fillRect(x * BLOCK_SIZE, (y-2) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-                        ctx.strokeRect(x * BLOCK_SIZE, (y-2) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                    }
-                });
-            });
-        }
-
-        // クリックイベント
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.floor((e.clientX - rect.left) / BLOCK_SIZE);
-            const y = Math.floor((e.clientY - rect.top) / BLOCK_SIZE) + 2; // +2 for hidden rows
+            container.innerHTML = sorted.map(update => {
+                const dateObj = new Date(update.date);
+                const dateStr = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+                
+                return `
+                    <div class="relative pl-8 opacity-0 translate-x-[-10px] animate-fade-in">
+                        <div class="timeline-item"></div>
+                        <div class="glass-card p-6 hover:bg-slate-800/80 transition-all border-slate-700/50 group">
+                            <span class="inline-block px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs font-bold mb-2">${dateStr}</span>
+                            <p class="text-gray-200">
+                                暁人さんが<span class="text-white font-bold ml-1 mr-1">「${update.content}」</span>を追加しました。
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
             
-            if (e.button === 0) { // 左クリック
-                arena[y][x] = selectedColor;
-            } else if (e.button === 2) { // 右クリック
-                arena[y][x] = 0;
-            }
-            draw();
-        });
-        canvas.oncontextmenu = (e) => e.preventDefault();
-
-        // カラー選択
-        document.getElementById('color-picker').addEventListener('click', (e) => {
-            if (e.target.classList.contains('color-btn')) {
-                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                selectedColor = parseInt(e.target.dataset.val);
-            }
-        });
-
-        // HOLD/NEXT 操作
-        function setHold(m) {
-            holdMino = m;
-            document.getElementById('hold-val').innerText = m || "None";
-        }
-        function addNext(m) {
-            nextQueue.push(m);
-            document.getElementById('next-val').innerText = nextQueue.join(', ');
-        }
-        function clearNext() {
-            nextQueue = [];
-            document.getElementById('next-val').innerText = "";
-        }
-
-        // データ出力
-        function exportData() {
-            // ブロックが存在する範囲を特定
-            let minRow = 22;
-            arena.forEach((row, y) => {
-                if (row.some(v => v !== 0)) minRow = Math.min(minRow, y);
+            // シンプルなフェードインアニメーションのトリガー
+            const items = container.querySelectorAll('.animate-fade-in');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.transition = 'all 0.5s ease-out';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, index * 100);
             });
-
-            const boardData = arena.slice(minRow).map(row => {
-                return row.map(v => v === 0 ? "." : v.toString()).join("");
-            });
-
-            const template = {
-                board: boardData,
-                hold: holdMino,
-                queue: nextQueue
-            };
-
-            document.getElementById('output-json').value = JSON.stringify(template, null, 4);
         }
 
-        function copyToClipboard() {
-            const textarea = document.getElementById('output-json');
-            textarea.select();
-            document.execCommand('copy');
-            alert("コピーしました。");
+        function addUpdate() {
+            document.getElementById('input-date').valueAsDate = new Date();
+            document.getElementById('update-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 背景スクロール禁止
         }
 
-        draw();
+        function closeModal() {
+            document.getElementById('update-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function saveUpdate() {
+            const date = document.getElementById('input-date').value;
+            const content = document.getElementById('input-text').value;
+
+            if (date && content) {
+                updates.push({ date, content });
+                renderUpdates();
+                closeModal();
+                document.getElementById('input-text').value = '';
+            }
+        }
+
+        window.onload = renderUpdates;
     </script>
 </body>
 </html>
