@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Tetris Template Data Exporter</title>
+    <style>
+        :root { --accent: #00f0f0; --bg: #0f0f13; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { display: flex; gap: 30px; background: #1a1a20; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        
+        /* 盤面エリア */
+        #editor-canvas { border: 2px solid #444; background: #000; cursor: crosshair; }
+        
+        /* 設定パネル */
+        .panel { width: 300px; display: flex; flex-direction: column; gap: 15px; }
+        .section { background: #252530; padding: 15px; border-radius: 8px; }
+        h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; }
+        
+        /* 色選択（ミノ選択） */
+        .color-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .color-btn { border: 2px solid transparent; padding: 5px; cursor: pointer; text-align: center; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .color-btn.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        
+        /* NEXT/HOLD入力 */
+        .queue-display { font-family: monospace; background: #000; padding: 10px; min-height: 40px; word-break: break-all; border-radius: 4px; margin-bottom: 5px; border: 1px solid #444; }
+        .input-group { display: flex; gap: 5px; flex-wrap: wrap; }
+        .mino-btn { background: #333; color: #fff; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+        .mino-btn:hover { background: #444; }
+
+        /* 出力エリア */
+        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #444; border-radius: 4px; resize: none; margin-top: 10px; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+        .btn-main:hover { opacity: 0.8; transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+    <h2 style="color:var(--accent);">TETRIS TEMPLATE EXPORTER</h2>
+    <p style="font-size: 13px; color: #aaa;">盤面をデザインして、プログラム用のデータを作成します</p>
+
+    <div class="container">
+        <div>
+            <canvas id="editor-canvas" width="240" height="480"></canvas>
+            <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                左クリック: 配置 / 右クリック: 消去
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section">
+                <h3>1. 設置するミノ（色）を選択</h3>
+                <div class="color-picker" id="color-picker">
+                    <div class="color-btn active" data-val="8" style="background:#444;">GRAY</div>
+                    <div class="color-btn" data-val="1" style="background:#00f0f0; color:#000;">I</div>
+                    <div class="color-btn" data-val="2" style="background:#0000f0;">J</div>
+                    <div class="color-btn" data-val="3" style="background:#f0a000;">L</div>
+                    <div class="color-btn" data-val="4" style="background:#f0f000; color:#000;">O</div>
+                    <div class="color-btn" data-val="5" style="background:#00f000; color:#000;">S</div>
+                    <div class="color-btn" data-val="6" style="background:#a000f0;">T</div>
+                    <div class="color-btn" data-val="7" style="background:#f00000;">Z</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>2. HOLD ミノ設定</h3>
+                <div class="input-group" id="hold-picker">
+                    <button class="mino-btn" onclick="setHold('I')">I</button>
+                    <button class="mino-btn" onclick="setHold('J')">J</button>
+                    <button class="mino-btn" onclick="setHold('L')">L</button>
+                    <button class="mino-btn" onclick="setHold('O')">O</button>
+                    <button class="mino-btn" onclick="setHold('S')">S</button>
+                    <button class="mino-btn" onclick="setHold('T')">T</button>
+                    <button class="mino-btn" onclick="setHold('Z')">Z</button>
+                    <button class="mino-btn" onclick="setHold(null)" style="color:#f44;">Clear</button>
+                </div>
+                <div class="queue-display" id="hold-val" style="color:var(--accent); font-size:20px; text-align:center;">None</div>
+            </div>
+
+            <div class="section">
+                <h3>3. NEXT キュー設定</h3>
+                <div class="input-group">
+                    <button class="mino-btn" onclick="addNext('I')">I</button>
+                    <button class="mino-btn" onclick="addNext('J')">J</button>
+                    <button class="mino-btn" onclick="addNext('L')">L</button>
+                    <button class="mino-btn" onclick="addNext('O')">O</button>
+                    <button class="mino-btn" onclick="addNext('S')">S</button>
+                    <button class="mino-btn" onclick="addNext('T')">T</button>
+                    <button class="mino-btn" onclick="addNext('Z')">Z</button>
+                    <button class="mino-btn" onclick="clearNext()" style="color:#f44;">Reset</button>
+                </div>
+                <div class="queue-display" id="next-val"></div>
+            </div>
+
+            <button class="btn-main" onclick="exportData()">EXPORT DATA</button>
+            <textarea id="output-json" readonly placeholder="ここにデータが出力されます"></textarea>
+            <button class="mino-btn" style="margin-top:5px; font-size:11px;" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('editor-canvas');
+        const ctx = canvas.getContext('2d');
+        const COLS = 10;
+        const ROWS = 20; // 画面上に見える範囲
+        const BLOCK_SIZE = 24;
+        
+        // 内部データ (22行として管理)
+        let arena = Array.from({length: 22}, () => new Array(COLS).fill(0));
+        let selectedColor = 8;
+        let holdMino = null;
+        let nextQueue = [];
+
+        const COLORS = [null, '#00f0f0', '#0000f0', '#f0a000', '#f0f000', '#00f000', '#a000f0', '#f00000', '#666'];
+
+        // 初期描画
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // グリッド線
+            ctx.strokeStyle = '#222';
+            for(let i=0; i<=COLS; i++) { ctx.beginPath(); ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); ctx.stroke(); }
+            for(let i=0; i<=ROWS; i++) { ctx.beginPath(); ctx.moveTo(0, i*BLOCK_SIZE); ctx.lineTo(canvas.width, i*BLOCK_SIZE); ctx.stroke(); }
+
+            // ブロック描画
+            arena.forEach((row, y) => {
+                if (y < 2) return; // 上位2行は隠し
+                row.forEach((v, x) => {
+                    if (v !== 0) {
+                        ctx.fillStyle = COLORS[v];
+                        ctx.fillRect(x * BLOCK_SIZE, (y-2) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+                        ctx.strokeRect(x * BLOCK_SIZE, (y-2) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            });
+        }
+
+        // クリックイベント
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / BLOCK_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / BLOCK_SIZE) + 2; // +2 for hidden rows
+            
+            if (e.button === 0) { // 左クリック
+                arena[y][x] = selectedColor;
+            } else if (e.button === 2) { // 右クリック
+                arena[y][x] = 0;
+            }
+            draw();
+        });
+        canvas.oncontextmenu = (e) => e.preventDefault();
+
+        // カラー選択
+        document.getElementById('color-picker').addEventListener('click', (e) => {
+            if (e.target.classList.contains('color-btn')) {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedColor = parseInt(e.target.dataset.val);
+            }
+        });
+
+        // HOLD/NEXT 操作
+        function setHold(m) {
+            holdMino = m;
+            document.getElementById('hold-val').innerText = m || "None";
+        }
+        function addNext(m) {
+            nextQueue.push(m);
+            document.getElementById('next-val').innerText = nextQueue.join(', ');
+        }
+        function clearNext() {
+            nextQueue = [];
+            document.getElementById('next-val').innerText = "";
+        }
+
+        // データ出力
+        function exportData() {
+            // ブロックが存在する範囲を特定
+            let minRow = 22;
+            arena.forEach((row, y) => {
+                if (row.some(v => v !== 0)) minRow = Math.min(minRow, y);
+            });
+
+            const boardData = arena.slice(minRow).map(row => {
+                return row.map(v => v === 0 ? "." : v.toString()).join("");
+            });
+
+            const template = {
+                board: boardData,
+                hold: holdMino,
+                queue: nextQueue
+            };
+
+            document.getElementById('output-json').value = JSON.stringify(template, null, 4);
+        }
+
+        function copyToClipboard() {
+            const textarea = document.getElementById('output-json');
+            textarea.select();
+            document.execCommand('copy');
+            alert("コピーしました。");
+        }
+
+        draw();
+    </script>
+</body>
+</html>
